@@ -1,11 +1,11 @@
 package com.example.college.COLLEGE;
 
-
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.context.annotation.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.*;
+import org.springframework.web.reactive.function.client.*;
 
 import java.util.*;
 
@@ -13,13 +13,13 @@ import java.util.*;
 @RequestMapping("/api/")
 public class Controller {
 
-    @Autowired
-    RestTemplate restTemplate = new RestTemplate();
+   @Autowired
+   private  WebClient.Builder webClientBuilder;
     private final collegeService service;
 
     public Controller(collegeService service, RestTemplate restTemplate) {
         this.service = service;
-        this.restTemplate = restTemplate;
+        this.webClientBuilder = webClientBuilder;
     }
 
     @PostMapping("/college")
@@ -47,17 +47,30 @@ public class Controller {
 //
 //        Integer responseBody = response.getBody();
 
-        HttpHeaders headers = new HttpHeaders();
 
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+      int value =  webClientBuilder.build()
+                .get()
+                .uri("http://localhost:8081/api/findpopulation?country=" + college.getCountry())
+                .retrieve()
+                .bodyToMono(Integer.class )
+                .block();
+
+       return value;
 
 
-        HttpEntity <collegeModel> requestEntity = new HttpEntity<collegeModel>(college,headers);
 
-        ResponseEntity<Integer> response =  restTemplate.exchange(baseUrl, HttpMethod.GET, requestEntity, Integer.class);
 
-        return response.getBody();
-       //this is webclient version ...
+//
+//        HttpHeaders headers = new HttpHeaders();
+//
+//        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+//
+//        HttpEntity <collegeModel> requestEntity = new HttpEntity<collegeModel>(college,headers);
+//
+//        ResponseEntity<Integer> response =  restTemplate.exchange(baseUrl, HttpMethod.GET, requestEntity, Integer.class);
+//
+//        return response.getBody();
+//       //this is webclient version ...
     }
 
 }
